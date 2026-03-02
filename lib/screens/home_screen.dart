@@ -46,7 +46,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       // School Name
                       const Text(
-                        "YOUR SCHOOL NAME HERE",
+                        "Al Madrasathul Irshadhiyya",
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 28,
@@ -56,7 +56,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       const SizedBox(height: 10),
                       const Text(
-                        "Semester Result Portal",
+                        "Examination Result Portal",
                         style: TextStyle(fontSize: 16, color: Colors.grey),
                       ),
                       const SizedBox(height: 40),
