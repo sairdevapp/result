@@ -39,28 +39,42 @@ class ResultScreen extends StatelessWidget {
 
           // 1. Logic to filter out empty/nil subjects dynamically
           List<DataRow> subjectRows = [];
-          Map<String, String> subjectsMap = {
-            'Thajveed': 'Thajveed',
-            'Kithabath': 'Kithabath',
-            'Fiqh': 'Fiqh',
-            'Thazkiya': 'Thazkiya',
-            'Thareekh': 'Thareekh',
-            'Duroos': 'Duroos',
-            'Duroos 1': 'Duroos_1',
-            'Duroos 2': 'Duroos_2',
-            'Aqaeda': 'Aqaeda',
-            'Quran & Hifz': 'Quran_&Hifz',
-            'Practical': 'Practical',
-            'Project': 'Project',
-            'Thafheem': 'Thafheem',
-            'Hifz': 'Hifz',
-            'Thazkiya & Thajweed': 'Thazkiya_&_Thajweed',
+          
+          // The keys on the right MUST exactly match the field names in your Firestore database.
+          // If a field is still missing, check your Firestore document to see exactly how it is spelled!
+          Map<String, List<String>> subjectsMap = {
+            'Thajveed': ['Thajveed'],
+            'Kithabath': ['Kithabath'],
+            'Fiqh': ['Fiqh'],
+            'Thazkiya': ['Thazkiya'],
+            'Thareekh': ['Thareekh'],
+            'Duroos': ['Duroos'],
+            'Duroos 1': ['Duroos_1'],
+            'Duroos 2': ['Duroos_2'],
+            'Aqaeda': ['Aqaeda'],
+            'Quran & Hifz': ['Quran_&Hifz', 'Quran_&_Hifz'], // Checking common variations
+            'Practical': ['Practical', 'Practical_'], // Accounts for trailing spaces in sheet
+            'Project': ['Project', 'Project_'],
+            'Thafheem': ['Thafheem'],
+            'Hifz': ['Hifz'],
+            'Thazkiya & Thajweed': ['Thazkiya_&_Thajweed'],
+            'Attendance': ['Attendance'],
+            'Total Mark': ['Total_Mark', 'Total', 'Total_Marks'], // Added Total Mark
           };
 
-          subjectsMap.forEach((displayName, dbKey) {
-            String? mark = data[dbKey]?.toString().trim();
-            // Only add the row if the mark exists, is not empty, and is not "nil"
-            if (mark != null && mark.isNotEmpty && mark.toLowerCase() != 'nil') {
+          subjectsMap.forEach((displayName, dbKeys) {
+            String? mark;
+            
+            // Look through the possible database keys for this subject
+            for (String key in dbKeys) {
+              if (data.containsKey(key) && data[key].toString().trim().isNotEmpty) {
+                mark = data[key].toString().trim();
+                break; // Stop looking once we find the value
+              }
+            }
+
+            // Only add the row if the mark exists and is not "nil"
+            if (mark != null && mark.toLowerCase() != 'nil') {
               subjectRows.add(
                 DataRow(
                   cells: [
@@ -71,7 +85,6 @@ class ResultScreen extends StatelessWidget {
               );
             }
           });
-
           // Check Pass/Fail status
           String passOrFailStr = data['Pass_or_fail']?.toString().trim().toLowerCase() ?? '';
           bool isPassed = passOrFailStr == 'pass';
@@ -148,7 +161,7 @@ class ResultScreen extends StatelessWidget {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Text("Rank: ${data['Rank']}   |   Attendance: ${data['Attendance'] ?? '-'}", 
+                                Text("Rank: ${data['Rank'] ?? '-'}", 
                                   style: const TextStyle(fontSize: 14, color: Colors.grey)),
                               ],
                             ),
