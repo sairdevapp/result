@@ -57,7 +57,7 @@ class ResultScreen extends StatelessWidget {
             'Thafheem': ['Thafheem'],
             'Hifz': ['Hifz'],
             'Thazkiya & Thajweed': ['Thazkiya_&_Thajweed'],
-            'Total Mark': ['Total_Mark', 'Total', 'Total_Marks'],
+            'Total Mark': ['Total_Mark_', 'Total', 'Total_Marks'],
             'Attendance': ['Attendance'],
           };
 
