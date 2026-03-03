@@ -34,14 +34,13 @@ class ResultScreen extends StatelessWidget {
             );
           }
 
-          // Extract data
+          // ==========================================
+          // 1. ALL LOGIC AND DATA EXTRACTION GOES HERE
+          // ==========================================
           var data = snapshot.data!.data() as Map<String, dynamic>;
 
-          // 1. Logic to filter out empty/nil subjects dynamically
+          // Subject Filtering Logic
           List<DataRow> subjectRows = [];
-          
-          // The keys on the right MUST exactly match the field names in your Firestore database.
-          // If a field is still missing, check your Firestore document to see exactly how it is spelled!
           Map<String, List<String>> subjectsMap = {
             'Thajveed': ['Thajveed'],
             'Kithabath': ['Kithabath'],
@@ -52,28 +51,24 @@ class ResultScreen extends StatelessWidget {
             'Duroos 1': ['Duroos_1'],
             'Duroos 2': ['Duroos_2'],
             'Aqaeda': ['Aqaeda'],
-            'Quran & Hifz': ['Quran_&Hifz', 'Quran_&_Hifz'], // Checking common variations
-            'Practical': ['Practical', 'Practical_'], // Accounts for trailing spaces in sheet
+            'Quran & Hifz': ['Quran_&Hifz', 'Quran_&_Hifz'],
+            'Practical': ['Practical', 'Practical_'],
             'Project': ['Project', 'Project_'],
             'Thafheem': ['Thafheem'],
             'Hifz': ['Hifz'],
             'Thazkiya & Thajweed': ['Thazkiya_&_Thajweed'],
-            'Total Mark': ['Total_Mark_', 'Total', 'Total_Marks'], // Added Total Mark
+            'Total Mark': ['Total_Mark', 'Total', 'Total_Marks'],
             'Attendance': ['Attendance'],
           };
 
           subjectsMap.forEach((displayName, dbKeys) {
             String? mark;
-            
-            // Look through the possible database keys for this subject
             for (String key in dbKeys) {
               if (data.containsKey(key) && data[key].toString().trim().isNotEmpty) {
                 mark = data[key].toString().trim();
-                break; // Stop looking once we find the value
+                break;
               }
             }
-
-            // Only add the row if the mark exists and is not "nil"
             if (mark != null && mark.toLowerCase() != 'nil') {
               subjectRows.add(
                 DataRow(
@@ -85,10 +80,17 @@ class ResultScreen extends StatelessWidget {
               );
             }
           });
-          // Check Pass/Fail status
+
+          // Pass/Fail and Rank Logic
           String passOrFailStr = data['Pass_or_fail']?.toString().trim().toLowerCase() ?? '';
           bool isPassed = passOrFailStr == 'pass';
+          
+          String rankStr = data['Rank']?.toString().trim() ?? '';
+          bool hasRank = rankStr.isNotEmpty && rankStr.toLowerCase() != 'nil';
 
+          // ==========================================
+          // 2. THE UI WIDGETS START HERE
+          // ==========================================
           return SingleChildScrollView(
             child: Center(
               child: Container(
@@ -103,7 +105,7 @@ class ResultScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         
-                        // --- NEW HEADERS ---
+                        // Headings
                         const Text(
                           "ISLAMIC EDUCATIONAL BOARD",
                           textAlign: TextAlign.center,
@@ -123,7 +125,7 @@ class ResultScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 24),
 
-                        // --- STUDENT INFO ---
+                        // Student Name
                         Text(
                           data['Name']?.toString() ?? 'Unknown Name',
                           textAlign: TextAlign.center,
@@ -154,15 +156,40 @@ class ResultScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 20),
 
-                        // Optional: Rank and Attendance (if you still want them displayed)
-                        if (data['Rank'] != null && data['Rank'].toString().isNotEmpty)
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 20),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
+                        // --- NEW: HIGHLIGHTED RANK BANNER ---
+                        if (hasRank)
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+                            margin: const EdgeInsets.only(bottom: 20),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [Colors.amber.shade200, Colors.amber.shade500],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.amber.withOpacity(0.4), 
+                                  blurRadius: 10, 
+                                  offset: const Offset(0, 4)
+                                )
+                              ],
+                            ),
+                            child: Column(
                               children: [
-                                Text("Rank: ${data['Rank'] ?? '-'}", 
-                                  style: const TextStyle(fontSize: 14, color: Colors.grey)),
+                                const Icon(Icons.emoji_events, color: Colors.deepOrange, size: 48),
+                                const SizedBox(height: 8),
+                                Text(
+                                  "Rank: $rankStr",
+                                  style: const TextStyle(
+                                    fontSize: 32,
+                                    fontWeight: FontWeight.w900,
+                                    color: Colors.brown,
+                                    letterSpacing: 1.5,
+                                  ),
+                                ),
                               ],
                             ),
                           ),
@@ -185,7 +212,6 @@ class ResultScreen extends StatelessWidget {
                           ),
 
                         // --- MARKS TABLE ---
-                        // Only renders the subjects that had marks
                         if (subjectRows.isNotEmpty)
                           Container(
                             decoration: BoxDecoration(
@@ -193,7 +219,7 @@ class ResultScreen extends StatelessWidget {
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: DataTable(
-                              headingRowColor: MaterialStateProperty.all(Colors.indigo.shade50),
+                              headingRowColor: WidgetStateProperty.all(Colors.indigo.shade50), // Updated for newer Flutter versions
                               columns: const [
                                 DataColumn(label: Text('Subject Name', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
                                 DataColumn(label: Text('Mark', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
