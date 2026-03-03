@@ -58,8 +58,8 @@ class ResultScreen extends StatelessWidget {
             'Thafheem': ['Thafheem'],
             'Hifz': ['Hifz'],
             'Thazkiya & Thajweed': ['Thazkiya_&_Thajweed'],
-            'Attendance': ['Attendance'],
             'Total Mark': ['Total_Mark_', 'Total', 'Total_Marks'], // Added Total Mark
+            'Attendance': ['Attendance'],
           };
 
           subjectsMap.forEach((displayName, dbKeys) {
